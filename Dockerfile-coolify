@@ -2,33 +2,38 @@ FROM node:20.18.0
 
 WORKDIR /app
 
-# Instalar pnpm e wrangler directamente, deshabilitando Corepack
+# Instalar pnpm y wrangler, sin Corepack
 RUN corepack disable && \
     npm install -g pnpm@8.15.4 wrangler
 
-# Copiar arquivos de dependências
+# Copiar archivos de dependencias
 COPY package.json pnpm-lock.yaml ./
 
-# Instalar dependências
+# Instalar dependencias
 RUN pnpm install --no-strict-peer-dependencies
 
-# Copiar código fonte e scripts
+# Copiar código fuente y scripts
 COPY . .
 
-# Garantir que o bindings.sh tem permissões de execução e formato correto
+# Dar permisos correctos a bindings.sh
 RUN tr -d '\r' < bindings.sh > bindings.tmp && \
     mv bindings.tmp bindings.sh && \
     chmod +x bindings.sh
 
-# Build da aplicação
+# ---------- AUMENTAR MEMORIA DEL HEAP DE NODE ----------
+# 4096 = 4 GB. Sube o baja según la RAM de tu servidor.
+ENV NODE_OPTIONS=--max-old-space-size=4096
+# -------------------------------------------------------
+
+# Build de la aplicación
 RUN pnpm run build
 
-# Expor porta
+# Exponer puerto
 EXPOSE 5173
 
-# Configurar variáveis de ambiente
+# Variables de entorno en runtime
 ENV NODE_ENV=production \
     RUNNING_IN_DOCKER=true
 
-# Comando para iniciar usando o script dockerstart
+# Comando de arranque
 CMD ["pnpm", "run", "dockerstart"]
