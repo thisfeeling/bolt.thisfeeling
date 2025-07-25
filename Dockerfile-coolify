@@ -10,7 +10,7 @@ RUN corepack disable && \
 COPY package.json pnpm-lock.yaml ./
 
 # Instalar dependências
-RUN pnpm install --legacy-peer-deps
+RUN pnpm install --no-strict-peer-dependencies
 
 # Copiar código fonte e scripts
 COPY . .
